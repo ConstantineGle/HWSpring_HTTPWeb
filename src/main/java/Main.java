@@ -3,9 +3,9 @@ import java.io.IOException;
 
 public class Main {
 
-    public static final int PORT = 9999;
+    //public static final int PORT = 9999;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         final var server = new Server();
 
@@ -29,6 +29,6 @@ public class Main {
             }
         });
 
-        server.acceptClient(PORT);
+        server.acceptClient();
     }
 }

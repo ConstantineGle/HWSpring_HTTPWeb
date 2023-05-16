@@ -12,6 +12,7 @@ import java.util.concurrent.*;
 public class Server {
 
     public final int THREADS = 64;
+    private final int PORT = 9999;
 
     private final List<String> validPaths = List.of("/index.html", "/spring.svg", "/spring.png", "/resources.html",
             "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html", "/events.html", "/events.js");
@@ -25,8 +26,8 @@ public class Server {
         handlerMap = new ConcurrentHashMap<>();
     }
 
-    public void acceptClient(int port) {
-        try (final var serverSocket = new ServerSocket(port)) {
+    public void acceptClient() {
+/*        try (final var serverSocket = new ServerSocket(port)) {
             while (true) {
                 socket = serverSocket.accept();
                 System.out.println("\n" + socket);
@@ -36,15 +37,19 @@ public class Server {
             e.printStackTrace();
         } finally {
             threadPool.shutdown();
-        }
+        }*/
+        threadPool.execute(this::workServer);
     }
 
     public void workServer() {
 
-        try (final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             final var out = new BufferedOutputStream(socket.getOutputStream())) {
+        try (
+                final var serverSocket = new ServerSocket(PORT);
+                final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                final var out = new BufferedOutputStream(socket.getOutputStream())) {
 
             while (true) {
+                socket = serverSocket.accept();
                 Request request = createRequest(in, out);
                 Handler handler = handlerMap.get(request.getMethod()).get(request.getPath());
                 System.out.println("handler: " + handler);
