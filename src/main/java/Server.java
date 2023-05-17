@@ -12,13 +12,13 @@ import java.util.concurrent.*;
 public class Server {
 
     public final int THREADS = 64;
-    private final int PORT = 9999;
+    private int port = 9999;
 
     private final List<String> validPaths = List.of("/index.html", "/spring.svg", "/spring.png", "/resources.html",
             "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html", "/events.html", "/events.js");
 
     private final ExecutorService threadPool;
-    private Socket socket;
+    //private Socket socket;
     private final ConcurrentHashMap<String, Map<String, Handler>> handlerMap;
 
     public Server() {
@@ -27,29 +27,25 @@ public class Server {
     }
 
     public void acceptClient() {
-/*        try (final var serverSocket = new ServerSocket(port)) {
+        try (final var serverSocket = new ServerSocket(port)) {
             while (true) {
-                socket = serverSocket.accept();
+                Socket socket = serverSocket.accept();
                 System.out.println("\n" + socket);
-                threadPool.execute(this::workServer);
+                threadPool.execute(() -> this.workServer(socket));
             }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             threadPool.shutdown();
-        }*/
-        threadPool.execute(this::workServer);
+        }
     }
 
-    public void workServer() {
+    public void workServer(Socket socket) {
 
-        try (
-                final var serverSocket = new ServerSocket(PORT);
-                final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                final var out = new BufferedOutputStream(socket.getOutputStream())) {
+        try (final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             final var out = new BufferedOutputStream(socket.getOutputStream())) {
 
             while (true) {
-                socket = serverSocket.accept();
                 Request request = createRequest(in, out);
                 Handler handler = handlerMap.get(request.getMethod()).get(request.getPath());
                 System.out.println("handler: " + handler);
@@ -81,7 +77,7 @@ public class Server {
         if (parts.length != 3) {
             out.write(("Invalid request").getBytes());
             System.out.println("Invalid request");
-            socket.close();
+            //socket.close();
         }
 
         String heading;
@@ -92,7 +88,8 @@ public class Server {
             var valueHeader = heading.substring(indexOf + 2);
             headers.put(nameHeader, valueHeader);
         }
-        Request request = new Request(parts[0], parts[1], headers, socket.getInputStream());
+        Request request = new Request(parts[0], parts[1], headers, null);
+        //Request request = new Request(parts[0], parts[1], headers, socket.getInputStream());
         System.out.println("request: " + request);
         out.flush();
         return request;
