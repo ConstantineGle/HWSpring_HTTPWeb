@@ -46,7 +46,7 @@ public class Server {
              final var out = new BufferedOutputStream(socket.getOutputStream())) {
 
             while (true) {
-                Request request = createRequest(in, out);
+                Request request = createRequest(in, out, socket);
                 Handler handler = handlerMap.get(request.getMethod()).get(request.getPath());
                 System.out.println("handler: " + handler);
 
@@ -65,7 +65,7 @@ public class Server {
         }
     }
 
-    public Request createRequest(BufferedReader in, BufferedOutputStream out) throws IOException {
+    public Request createRequest(BufferedReader in, BufferedOutputStream out, Socket socket) throws IOException {
         var requestLine = "";
         do {
             requestLine = in.readLine();
@@ -77,7 +77,7 @@ public class Server {
         if (parts.length != 3) {
             out.write(("Invalid request").getBytes());
             System.out.println("Invalid request");
-            //socket.close();
+            socket.close();
         }
 
         String heading;
@@ -88,8 +88,8 @@ public class Server {
             var valueHeader = heading.substring(indexOf + 2);
             headers.put(nameHeader, valueHeader);
         }
-        Request request = new Request(parts[0], parts[1], headers, null);
-        //Request request = new Request(parts[0], parts[1], headers, socket.getInputStream());
+        //Request request = new Request(parts[0], parts[1], headers, null);
+        Request request = new Request(parts[0], parts[1], headers, socket.getInputStream());
         System.out.println("request: " + request);
         out.flush();
         return request;
