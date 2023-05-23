@@ -88,7 +88,6 @@ public class Server {
             var valueHeader = heading.substring(indexOf + 2);
             headers.put(nameHeader, valueHeader);
         }
-        //Request request = new Request(parts[0], parts[1], headers, null);
         Request request = new Request(parts[0], parts[1], headers, socket.getInputStream());
         System.out.println("request: " + request);
         out.flush();
