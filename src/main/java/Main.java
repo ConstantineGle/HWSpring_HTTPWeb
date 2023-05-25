@@ -1,32 +1,36 @@
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
 
 public class Main {
-
-    //public static final int PORT = 9999;
 
     public static void main(String[] args) throws IOException {
 
         final var server = new Server();
 
-        server.addHandler("GET", "/spring.svg", new Handler() {
-            public void handle(Request request, BufferedOutputStream responseStream) {
-                try {
-                    server.createResponse(request, responseStream);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        server.addHandler("POST", "/resources.html", new Handler() {
-            public void handle(Request request, BufferedOutputStream responseStream) {
-                try {
-                    server.createResponse(request, responseStream);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        server.addHandler("GET", "/classic.html?last=10", (request, out) -> {
+            var i = request.getPath().indexOf("?");
+            var path = request.getPath().substring(0, i);
+            final var filePath = Path.of(".", "public", path);
+            final var mimeType = Files.probeContentType(filePath);
+            final var template = Files.readString(filePath);
+            final var content = template.replace(
+                    "{time}",
+                    LocalDateTime.now().toString() +
+                            " parameter last = " + request.getQueryParam("last") +
+                            "list parameters = " + request.getQueryParams()
+            ).getBytes();
+            out.write((
+                    "HTTP/1.1 200 OK\r\n" +
+                            "Content-Type: " + mimeType + "\r\n" +
+                            "Content-Length: " + content.length + "\r\n" +
+                            "Connection: close\r\n" +
+                            "\r\n"
+            ).getBytes());
+            out.write(content);
+            out.flush();
         });
 
         server.acceptClient();
