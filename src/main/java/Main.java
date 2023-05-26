@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         final var server = new Server();
 
